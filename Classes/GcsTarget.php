@@ -47,6 +47,14 @@ class GcsTarget implements TargetInterface
     protected $bucketName;
 
     /**
+     * Name of a base folder that should be used in the bucket
+     * This helps with the google loadbalancer
+     *
+     * @var string
+     */
+    protected $baseFolder = '';
+
+    /**
      * A prefix to use for the key of bucket objects used by this storage
      *
      * @var string
@@ -125,6 +133,9 @@ class GcsTarget implements TargetInterface
             switch ($key) {
                 case 'bucket':
                     $this->bucketName = $value;
+                break;
+                case 'baseFolder':
+                    $this->baseFolder = $value . "/";
                 break;
                 case 'keyPrefix':
                     $this->keyPrefix = ltrim($value, '/');
@@ -232,7 +243,7 @@ class GcsTarget implements TargetInterface
         } else {
             foreach ($collection->getObjects() as $object) {
                 /** @var \Neos\Flow\ResourceManagement\Storage\StorageObject $object */
-                $this->publishFile($object->getStream(), $this->getRelativePublicationPathAndFilename($object), $object);
+                $this->publishFile($object->getStream(), $this->baseFolder . $this->getRelativePublicationPathAndFilename($object), $object);
                 unset($obsoleteObjects[$this->getRelativePublicationPathAndFilename($object)]);
             }
         }
