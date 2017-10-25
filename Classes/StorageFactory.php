@@ -11,8 +11,8 @@ namespace Flownative\Google\CloudStorage;
  * source code.
  */
 
-use Google\Cloud\Core\ServiceBuilder;
 use Neos\Flow\Annotations as Flow;
+use Vowo\Google\CloudConnect\ConnectFactory;
 
 /**
  * Factory for the Google Cloud Storage service class
@@ -21,17 +21,12 @@ use Neos\Flow\Annotations as Flow;
  */
 class StorageFactory
 {
-    /**
-     * @Flow\InjectConfiguration("profiles")
-     * @var array
-     */
-    protected $credentialProfiles;
 
     /**
      * @Flow\Inject
-     * @var \Neos\Flow\Utility\Environment
+     * @var ConnectFactory
      */
-    protected $environment;
+    protected $connectFactory;
 
     /**
      * Creates a new Storage instance and authenticates agains the Google API
@@ -42,29 +37,7 @@ class StorageFactory
      */
     public function create($credentialsProfileName = 'default')
     {
-        if (!isset($this->credentialProfiles[$credentialsProfileName])) {
-            throw new Exception(sprintf('The specified Google Cloud Storage credentials profile "%s" does not exist, please check your settings.', $credentialsProfileName), 1446553024);
-        }
-
-        if (!empty($this->credentialProfiles[$credentialsProfileName]['credentials']['privateKeyJsonBase64Encoded'])) {
-            $googleCloud = new ServiceBuilder([
-                'keyFile' => json_decode(base64_decode($this->credentialProfiles[$credentialsProfileName]['credentials']['privateKeyJsonBase64Encoded']), true)
-            ]);
-        } else {
-            if (substr($this->credentialProfiles[$credentialsProfileName]['credentials']['privateKeyJsonPathAndFilename'], 0, 1) !== '/') {
-                $privateKeyPathAndFilename = FLOW_PATH_ROOT . $this->credentialProfiles[$credentialsProfileName]['credentials']['privateKeyJsonPathAndFilename'];
-            } else {
-                $privateKeyPathAndFilename = $this->credentialProfiles[$credentialsProfileName]['credentials']['privateKeyJsonPathAndFilename'];
-            }
-
-            if (!file_exists($privateKeyPathAndFilename)) {
-                throw new Exception(sprintf('The Google Cloud Storage private key file "%s" does not exist. Either the file is missing or you need to adjust your settings.', $privateKeyPathAndFilename), 1446553054);
-            }
-            $googleCloud = new ServiceBuilder([
-                'keyFilePath' => $privateKeyPathAndFilename
-            ]);
-        }
-
+        $googleCloud = $this->connectFactory->create($credentialsProfileName);
         return $googleCloud->storage();
     }
 }

@@ -16,7 +16,8 @@
     "require": {
         "neos/flow": "4.* || dev-master",
         "google/cloud-storage": "1.1.*",
-        "guzzlehttp/psr7": "1.*"
+        "guzzlehttp/psr7": "1.*",
+        "vowo/google-cloud-connect": "1.* || dev-master"
     },
     "autoload": {
         "psr-4": {
